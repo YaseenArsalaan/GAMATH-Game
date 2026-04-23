@@ -1,0 +1,2209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FIND YOUR X — Math Quest</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap');
+
+  :root {
+    --neon-green: #00ff88;
+    --neon-blue: #00d4ff;
+    --neon-pink: #ff006e;
+    --neon-yellow: #ffdd00;
+    --neon-purple: #bf00ff;
+    --dark: #050510;
+    --darker: #020208;
+    --grid-color: rgba(0,212,255,0.08);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--dark);
+    font-family: 'Press Start 2P', monospace;
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* GRID BACKGROUND */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--grid-color) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  #masterContainer {
+    position: relative;
+    width: 900px;
+    height: 560px;
+    background: var(--darker);
+    border: 2px solid var(--neon-blue);
+    box-shadow: 0 0 40px rgba(0,212,255,0.3), inset 0 0 40px rgba(0,0,0,0.8);
+    overflow: hidden;
+    z-index: 1;
+  }
+
+  /* ============ INTRO SCENE ============ */
+  #introScene {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    background: #0a0a1a;
+  }
+
+  .classroom {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%);
+  }
+
+  /* Classroom desks drawn with CSS */
+  .desk-row {
+    position: absolute;
+    bottom: 80px;
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+  }
+
+  .desk {
+    width: 80px;
+    height: 30px;
+    background: #4a3728;
+    border-radius: 3px;
+    border-bottom: 8px solid #2d1f12;
+    position: relative;
+  }
+
+  .desk::after {
+    content: '';
+    position: absolute;
+    top: 5px; left: 10px;
+    width: 60px; height: 18px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 2px;
+  }
+
+  .blackboard {
+    position: absolute;
+    top: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 400px;
+    height: 160px;
+    background: #1a3a2a;
+    border: 4px solid #5a3a1a;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+  }
+
+  .board-text {
+    font-family: 'Share Tech Mono', monospace;
+    color: rgba(255,255,255,0.85);
+    font-size: 14px;
+    text-align: center;
+    line-height: 2;
+    text-shadow: 0 0 6px rgba(255,255,255,0.3);
+  }
+
+  .board-equation {
+    font-family: 'Share Tech Mono', monospace;
+    color: #ffdd00;
+    font-size: 22px;
+    font-weight: bold;
+    margin-top: 10px;
+    text-shadow: 0 0 10px rgba(255,221,0,0.8);
+    animation: flicker 2s infinite;
+  }
+
+  @keyframes flicker {
+    0%,95%,100% { opacity:1; }
+    96% { opacity:0.3; }
+    97% { opacity:1; }
+    98% { opacity:0.5; }
+  }
+
+  /* Stickman in classroom */
+  #introStickman {
+    position: absolute;
+    bottom: 110px;
+    left: 200px;
+    width: 40px;
+    height: 80px;
+    transition: all 0.5s;
+  }
+
+  .stickman-svg { width: 100%; height: 100%; }
+
+  .speech-bubble {
+    position: absolute;
+    background: white;
+    color: #222;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    padding: 8px 12px;
+    border-radius: 12px;
+    white-space: nowrap;
+    top: -50px;
+    left: -20px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    opacity: 0;
+    transition: opacity 0.5s;
+  }
+
+  .speech-bubble::after {
+    content: '';
+    position: absolute;
+    bottom: -8px; left: 20px;
+    border: 8px solid transparent;
+    border-top-color: white;
+    border-bottom: none;
+  }
+
+  .intro-caption {
+    position: absolute;
+    bottom: 20px;
+    left: 0; right: 0;
+    text-align: center;
+    font-family: 'Share Tech Mono', monospace;
+    color: var(--neon-blue);
+    font-size: 13px;
+    letter-spacing: 2px;
+    opacity: 0;
+    transition: opacity 0.8s;
+  }
+
+  /* TELEPORT EFFECT */
+  #teleportFlash {
+    position: absolute;
+    inset: 0;
+    background: white;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 200;
+    transition: opacity 0.1s;
+  }
+
+  /* ============ TITLE SCREEN ============ */
+  #titleScreen {
+    position: absolute;
+    inset: 0;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 90;
+    background: radial-gradient(ellipse at center, #0d0d2b 0%, #050510 100%);
+  }
+
+  .title-glitch {
+    font-family: 'Orbitron', monospace;
+    font-size: 42px;
+    font-weight: 900;
+    color: var(--neon-green);
+    text-shadow: 0 0 20px var(--neon-green), 3px 3px 0 var(--neon-pink), -3px -3px 0 var(--neon-blue);
+    letter-spacing: 4px;
+    animation: glitch 3s infinite;
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  @keyframes glitch {
+    0%,90%,100% { text-shadow: 0 0 20px var(--neon-green), 3px 3px 0 var(--neon-pink), -3px -3px 0 var(--neon-blue); transform: translate(0); }
+    91% { transform: translate(-3px, 1px); text-shadow: 4px 4px 0 var(--neon-pink); }
+    92% { transform: translate(3px, -1px); text-shadow: -4px -4px 0 var(--neon-blue); }
+    93% { transform: translate(0); }
+  }
+
+  .title-sub {
+    font-family: 'Share Tech Mono', monospace;
+    color: var(--neon-yellow);
+    font-size: 12px;
+    margin: 16px 0 32px;
+    letter-spacing: 6px;
+    opacity: 0.8;
+  }
+
+  .title-stickman-wrap {
+    margin: 10px 0 20px;
+  }
+
+  .start-btn {
+    background: transparent;
+    border: 2px solid var(--neon-green);
+    color: var(--neon-green);
+    font-family: 'Press Start 2P', monospace;
+    font-size: 13px;
+    padding: 14px 32px;
+    cursor: pointer;
+    letter-spacing: 3px;
+    box-shadow: 0 0 20px rgba(0,255,136,0.4), inset 0 0 20px rgba(0,255,136,0.05);
+    transition: all 0.2s;
+    animation: pulse-btn 1.5s infinite;
+    margin-top: 10px;
+  }
+
+  @keyframes pulse-btn {
+    0%,100% { box-shadow: 0 0 20px rgba(0,255,136,0.4); }
+    50% { box-shadow: 0 0 40px rgba(0,255,136,0.8), inset 0 0 20px rgba(0,255,136,0.1); }
+  }
+
+  .start-btn:hover { background: rgba(0,255,136,0.1); transform: scale(1.05); }
+
+  /* ============ GAME CANVAS ============ */
+  #gameScreen {
+    position: absolute;
+    inset: 0;
+    display: none;
+    z-index: 10;
+  }
+
+  #gameCanvas {
+    display: block;
+    width: 900px;
+    height: 560px;
+  }
+
+  /* HUD */
+  #hud {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 50px;
+    background: rgba(5,5,16,0.9);
+    border-bottom: 1px solid rgba(0,212,255,0.3);
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 20px;
+    z-index: 50;
+  }
+
+  .hud-item {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--neon-blue);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .hud-val {
+    color: var(--neon-green);
+    font-weight: bold;
+    font-size: 13px;
+  }
+
+  .hp-bar-wrap {
+    width: 100px;
+    height: 10px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(0,255,136,0.4);
+    border-radius: 5px;
+    overflow: hidden;
+  }
+
+  #hpBar {
+    height: 100%;
+    background: linear-gradient(90deg, #00ff88, #00dd66);
+    transition: width 0.3s;
+    border-radius: 5px;
+  }
+
+  /* CLUE PANEL */
+  #cluePanel {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 36px;
+    background: rgba(5,5,16,0.95);
+    border-top: 1px solid rgba(255,221,0,0.3);
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 12px;
+    z-index: 50;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--neon-yellow);
+    overflow: hidden;
+  }
+
+  /* POWER UP POPUP */
+  #powerupPopup {
+    position: absolute;
+    top: 60px;
+    right: 16px;
+    background: rgba(191,0,255,0.15);
+    border: 1px solid var(--neon-purple);
+    color: var(--neon-purple);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    padding: 8px 14px;
+    border-radius: 6px;
+    z-index: 60;
+    opacity: 0;
+    transition: opacity 0.4s;
+    text-align: center;
+    max-width: 180px;
+  }
+
+  /* LEVEL ANNOUNCEMENT */
+  #levelAnnounce {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 70;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.5s;
+  }
+
+  .level-num {
+    font-family: 'Orbitron', monospace;
+    font-size: 56px;
+    font-weight: 900;
+    color: var(--neon-yellow);
+    text-shadow: 0 0 30px rgba(255,221,0,0.8);
+    line-height: 1;
+  }
+
+  .level-enemy {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 18px;
+    color: var(--neon-pink);
+    margin-top: 8px;
+    text-shadow: 0 0 12px rgba(255,0,110,0.8);
+  }
+
+  /* BOSS HP */
+  #bossHpWrap {
+    position: absolute;
+    top: 58px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 300px;
+    z-index: 55;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .boss-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--neon-pink);
+    letter-spacing: 2px;
+  }
+
+  .boss-bar-wrap {
+    width: 100%;
+    height: 12px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,0,110,0.6);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  #bossHpBar {
+    height: 100%;
+    background: linear-gradient(90deg, #ff006e, #ff4444);
+    transition: width 0.3s;
+    border-radius: 6px;
+  }
+
+  /* SOLVE SCREEN */
+  #solveScreen {
+    position: absolute;
+    inset: 0;
+    background: rgba(5,5,16,0.97);
+    z-index: 200;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 30px;
+  }
+
+  .solve-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 20px;
+    color: var(--neon-yellow);
+    margin-bottom: 20px;
+    text-shadow: 0 0 20px rgba(255,221,0,0.6);
+    text-align: center;
+  }
+
+  .clue-list {
+    background: rgba(0,212,255,0.05);
+    border: 1px solid rgba(0,212,255,0.2);
+    border-radius: 8px;
+    padding: 16px 24px;
+    margin-bottom: 20px;
+    width: 100%;
+    max-width: 600px;
+  }
+
+  .clue-item {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--neon-blue);
+    padding: 4px 0;
+    border-bottom: 1px solid rgba(0,212,255,0.1);
+  }
+
+  .final-equation {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 22px;
+    color: var(--neon-yellow);
+    margin: 16px 0;
+    text-shadow: 0 0 12px rgba(255,221,0,0.5);
+    text-align: center;
+  }
+
+  .solve-input {
+    background: transparent;
+    border: 2px solid var(--neon-green);
+    color: var(--neon-green);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 20px;
+    padding: 10px 20px;
+    width: 200px;
+    text-align: center;
+    outline: none;
+    border-radius: 4px;
+    box-shadow: 0 0 12px rgba(0,255,136,0.3);
+    margin: 10px 0;
+  }
+
+  .solve-btn {
+    background: transparent;
+    border: 2px solid var(--neon-green);
+    color: var(--neon-green);
+    font-family: 'Press Start 2P', monospace;
+    font-size: 11px;
+    padding: 12px 24px;
+    cursor: pointer;
+    letter-spacing: 2px;
+    box-shadow: 0 0 16px rgba(0,255,136,0.3);
+    transition: all 0.2s;
+    margin-top: 10px;
+  }
+
+  .solve-btn:hover { background: rgba(0,255,136,0.15); }
+
+  .solve-feedback {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    margin-top: 12px;
+    height: 20px;
+    text-align: center;
+  }
+
+  /* WIN SCREEN */
+  #winScreen {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, #0d2b0d 0%, #050510 100%);
+    z-index: 300;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+  }
+
+  .win-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 36px;
+    font-weight: 900;
+    color: var(--neon-green);
+    text-shadow: 0 0 40px var(--neon-green);
+    animation: win-pulse 1s infinite;
+    text-align: center;
+  }
+
+  @keyframes win-pulse {
+    0%,100% { text-shadow: 0 0 40px var(--neon-green); }
+    50% { text-shadow: 0 0 80px var(--neon-green), 0 0 120px var(--neon-blue); }
+  }
+
+  /* GAME OVER */
+  #gameOverScreen {
+    position: absolute;
+    inset: 0;
+    background: rgba(5,5,16,0.97);
+    z-index: 300;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+  }
+
+  .go-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 42px;
+    font-weight: 900;
+    color: var(--neon-pink);
+    text-shadow: 0 0 30px var(--neon-pink);
+    text-align: center;
+  }
+
+  /* CONTROLS HINT */
+  #controlsHint {
+    position: absolute;
+    bottom: 40px;
+    right: 16px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    color: rgba(0,212,255,0.4);
+    text-align: right;
+    line-height: 1.8;
+    z-index: 55;
+    pointer-events: none;
+  }
+
+  /* COMBO DISPLAY */
+  #comboDisplay {
+    position: absolute;
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'Orbitron', monospace;
+    font-size: 18px;
+    color: var(--neon-yellow);
+    text-shadow: 0 0 12px rgba(255,221,0,0.8);
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: 60;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+</style>
+</head>
+<body>
+<div id="masterContainer">
+
+  <!-- TELEPORT FLASH -->
+  <div id="teleportFlash"></div>
+
+  <!-- ===== INTRO SCENE ===== -->
+  <div id="introScene">
+    <div class="classroom"></div>
+
+    <!-- Blackboard -->
+    <div class="blackboard">
+      <div class="board-text">EXAM — SOLVE FOR X</div>
+      <div class="board-equation" id="boardEq">2x² + 5x - 3 = 0</div>
+      <div class="board-text" style="font-size:11px;margin-top:6px;color:rgba(255,255,255,0.5);">TIME REMAINING: 45:00</div>
+    </div>
+
+    <!-- Desks -->
+    <div class="desk-row">
+      <div class="desk"></div>
+      <div class="desk"></div>
+      <div class="desk" style="background:#5a4738;"></div>
+      <div class="desk"></div>
+      <div class="desk"></div>
+    </div>
+
+    <!-- Stickman -->
+    <div id="introStickman">
+      <div class="speech-bubble" id="bubble1">Wait... what IS X?!</div>
+      <svg class="stickman-svg" viewBox="0 0 40 80" xmlns="http://www.w3.org/2000/svg">
+        <!-- Stickman body: head, body, arms, legs -->
+        <circle cx="20" cy="10" r="8" stroke="#00ff88" stroke-width="2" fill="none"/>
+        <line x1="20" y1="18" x2="20" y2="50" stroke="#00ff88" stroke-width="2"/>
+        <line x1="20" y1="28" x2="6" y2="40" stroke="#00ff88" stroke-width="2"/>
+        <line x1="20" y1="28" x2="34" y2="40" stroke="#00ff88" stroke-width="2"/>
+        <line x1="20" y1="50" x2="10" y2="68" stroke="#00ff88" stroke-width="2"/>
+        <line x1="20" y1="50" x2="30" y2="68" stroke="#00ff88" stroke-width="2"/>
+        <!-- Worried eyes -->
+        <circle cx="16" cy="9" r="1.5" fill="#00ff88"/>
+        <circle cx="24" cy="9" r="1.5" fill="#00ff88"/>
+        <!-- Sweat drop -->
+        <ellipse cx="30" cy="6" rx="2" ry="3" fill="#00d4ff" opacity="0.7"/>
+      </svg>
+    </div>
+
+    <div class="intro-caption" id="introCaption">ALGEBRA CLASS — 3RD PERIOD</div>
+  </div>
+
+  <!-- ===== TITLE SCREEN ===== -->
+  <div id="titleScreen">
+    <div class="title-glitch">FIND YOUR X</div>
+    <div class="title-sub">A MATH QUEST</div>
+    <div class="title-stickman-wrap">
+      <svg width="60" height="120" viewBox="0 0 40 80" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="20" cy="10" r="8" stroke="#00ff88" stroke-width="2" fill="none"/>
+        <line x1="20" y1="18" x2="20" y2="50" stroke="#00ff88" stroke-width="2"/>
+        <line x1="20" y1="28" x2="4" y2="22" stroke="#00ff88" stroke-width="2"/>
+        <line x1="20" y1="28" x2="36" y2="38" stroke="#00ff88" stroke-width="2"/>
+        <line x1="20" y1="50" x2="8" y2="70" stroke="#00ff88" stroke-width="2"/>
+        <line x1="20" y1="50" x2="32" y2="70" stroke="#00ff88" stroke-width="2"/>
+        <circle cx="16" cy="9" r="1.5" fill="#00ff88"/>
+        <circle cx="24" cy="9" r="1.5" fill="#00ff88"/>
+        <!-- Smile -->
+        <path d="M15 13 Q20 17 25 13" stroke="#00ff88" stroke-width="1.5" fill="none"/>
+        <!-- Gun arm: f(x)= -->
+        <rect x="28" y="33" width="18" height="7" rx="2" fill="#ffdd00" opacity="0.9"/>
+        <text x="29" y="40" font-family="monospace" font-size="5" fill="#050510" font-weight="bold">f(x)=</text>
+      </svg>
+    </div>
+    <button class="start-btn" onclick="startGame()">▶ START QUEST</button>
+    <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:rgba(0,212,255,0.4);margin-top:14px;text-align:center;line-height:2;">
+      ← → MOVE &nbsp;|&nbsp; SPACE / ↑ JUMP &nbsp;|&nbsp; Z SHOOT &nbsp;|&nbsp; X SPECIAL
+    </div>
+  </div>
+
+  <!-- ===== GAME SCREEN ===== -->
+  <div id="gameScreen">
+    <!-- HUD -->
+    <div id="hud">
+      <div class="hud-item">
+        HP
+        <div class="hp-bar-wrap"><div id="hpBar" style="width:100%"></div></div>
+      </div>
+      <div class="hud-item">LVL <span class="hud-val" id="hudLevel">1</span></div>
+      <div class="hud-item">SCORE <span class="hud-val" id="hudScore">0</span></div>
+      <div class="hud-item">AMMO <span class="hud-val" id="hudAmmo">∞</span></div>
+      <div class="hud-item" style="margin-left:auto;">
+        CLUES <span class="hud-val" id="hudClues">0</span>/5
+      </div>
+    </div>
+
+    <!-- Game Canvas -->
+    <canvas id="gameCanvas" width="900" height="510" style="position:absolute;top:50px;left:0;"></canvas>
+
+    <!-- Boss HP -->
+    <div id="bossHpWrap">
+      <div class="boss-label" id="bossLabel">⚠ BOSS BATTLE ⚠</div>
+      <div class="boss-bar-wrap"><div id="bossHpBar" style="width:100%"></div></div>
+    </div>
+
+    <!-- Clue Panel -->
+    <div id="cluePanel">
+      <span style="color:var(--neon-yellow);font-weight:bold;">📜 CLUE:</span>
+      <span id="clueText">Defeat enemies to collect clues!</span>
+    </div>
+
+    <!-- Power Up Popup -->
+    <div id="powerupPopup"></div>
+
+    <!-- Level Announce -->
+    <div id="levelAnnounce">
+      <div class="level-num" id="announceNum">LEVEL 1</div>
+      <div class="level-enemy" id="announceEnemy">ENEMY: x</div>
+    </div>
+
+    <!-- Combo -->
+    <div id="comboDisplay" id="comboDisplay">COMBO x3!</div>
+
+    <!-- Controls Hint -->
+    <div id="controlsHint">
+      ← → MOVE<br>
+      SPACE/↑ JUMP<br>
+      Z SHOOT<br>
+      X SPECIAL ATTACK
+    </div>
+  </div>
+
+  <!-- ===== SOLVE SCREEN ===== -->
+  <div id="solveScreen">
+    <div class="solve-title">🎓 FINAL EXAM — FIND THE VALUE OF X</div>
+    <div class="clue-list" id="clueListDisplay"></div>
+    <div class="final-equation" id="finalEquation">2x² + 5x - 3 = 0</div>
+    <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:rgba(0,212,255,0.6);margin-bottom:8px;">
+      HINT: Use the quadratic formula x = (-b ± √(b²-4ac)) / 2a
+    </div>
+    <input class="solve-input" id="solveInput" type="text" placeholder="x = ?" maxlength="10">
+    <button class="solve-btn" onclick="checkAnswer()">SUBMIT ANSWER</button>
+    <div class="solve-feedback" id="solveFeedback"></div>
+  </div>
+
+  <!-- ===== WIN SCREEN ===== -->
+  <div id="winScreen">
+    <div class="win-title">🎉 YOU FOUND X! 🎉</div>
+    <div style="font-family:'Share Tech Mono',monospace;font-size:14px;color:var(--neon-yellow);text-align:center;line-height:2;">
+      x = 0.5 &nbsp;&amp;&nbsp; x = -3<br>
+      <span style="font-size:10px;color:rgba(255,255,255,0.5);">From: 2x² + 5x - 3 = 0</span>
+    </div>
+    <div style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--neon-blue);text-align:center;line-height:2;margin-top:8px;">
+      STICKMAN PASSED THE EXAM!<br>
+      HE GRADUATED! 🎓
+    </div>
+    <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--neon-green);text-align:center;" id="winScore"></div>
+    <button class="start-btn" onclick="location.reload()" style="margin-top:16px;">PLAY AGAIN</button>
+  </div>
+
+  <!-- ===== GAME OVER SCREEN ===== -->
+  <div id="gameOverScreen">
+    <div class="go-title">DIVISION BY ZERO</div>
+    <div style="font-family:'Share Tech Mono',monospace;font-size:13px;color:rgba(255,255,255,0.6);text-align:center;line-height:2;">
+      You were undefined.<br>
+      Math says: try again.
+    </div>
+    <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--neon-yellow);" id="goScore"></div>
+    <button class="start-btn" onclick="location.reload()" style="margin-top:16px;border-color:var(--neon-pink);color:var(--neon-pink);">RETRY</button>
+  </div>
+
+</div>
+
+<script>
+// ===================================================
+//  MATH QUEST: FIND YOUR X  — Full Game Engine
+// ===================================================
+
+// ---- INTRO SEQUENCE ----
+let introPhase = 0;
+function runIntro() {
+  const caption = document.getElementById('introCaption');
+  const bubble  = document.getElementById('bubble1');
+  const stickman = document.getElementById('introStickman');
+  const flash   = document.getElementById('teleportFlash');
+
+  // Phase 0: show caption
+  setTimeout(() => {
+    caption.style.opacity = '1';
+  }, 500);
+
+  // Phase 1: show bubble
+  setTimeout(() => {
+    bubble.style.opacity = '1';
+  }, 1800);
+
+  // Phase 2: stickman panics (shakes)
+  setTimeout(() => {
+    stickman.style.transform = 'translateX(-5px)';
+  }, 3000);
+  setTimeout(() => {
+    stickman.style.transform = 'translateX(5px)';
+  }, 3150);
+  setTimeout(() => {
+    stickman.style.transform = 'translateX(0)';
+    bubble.textContent = 'I MUST FIND X!!!';
+  }, 3300);
+
+  // Phase 3: TELEPORT
+  setTimeout(() => {
+    flash.style.opacity = '1';
+  }, 4200);
+  setTimeout(() => {
+    flash.style.opacity = '0';
+    document.getElementById('introScene').style.display = 'none';
+    const ts = document.getElementById('titleScreen');
+    ts.style.display = 'flex';
+  }, 4600);
+}
+
+runIntro();
+
+// ---- GAME STATE ----
+let state = {
+  hp: 100,
+  maxHp: 100,
+  score: 0,
+  level: 1,
+  maxLevel: 20,
+  clues: [],
+  totalClues: 5,
+  gameRunning: false,
+  combo: 0,
+  comboTimer: 0,
+  specialCooldown: 0,
+  allies: [],        // friendly formulas helping
+  powerups: []       // active powerups
+};
+
+// Level definitions
+const LEVELS = [
+  // Level 1-5: Basic variables
+  { name:'x', type:'variable', color:'#ff006e', speed:1.2, hp:3, score:100, isBoss:false, clue: null },
+  { name:'y', type:'variable', color:'#ff006e', speed:1.4, hp:3, score:100, isBoss:false, clue:null },
+  { name:'z', type:'variable', color:'#ff4444', speed:1.5, hp:4, score:120, isBoss:false, clue:null },
+  { name:'2x', type:'coefficient', color:'#ff8800', speed:1.6, hp:5, score:150, isBoss:false, clue:'CLUE 1: The coefficient is 2' },
+  { name:'BOSS: Σ', type:'boss', color:'#ff006e', speed:0.8, hp:20, score:500, isBoss:true, clue:'CLUE 2: The sum has 3 terms' },
+  // Level 6-10: Algebra
+  { name:'5x', type:'term', color:'#ff8800', speed:1.8, hp:6, score:160, isBoss:false, clue:null },
+  { name:'-3', type:'constant', color:'#ffaa00', speed:2.0, hp:6, score:160, isBoss:false, clue:null },
+  { name:'x²', type:'power', color:'#ff4400', speed:2.1, hp:8, score:200, isBoss:false, clue:null },
+  { name:'√x', type:'radical', color:'#ff5500', speed:2.2, hp:8, score:200, isBoss:false, clue:'CLUE 3: One solution is positive' },
+  { name:'BOSS: ±', type:'boss', color:'#ff006e', speed:1.0, hp:30, score:700, isBoss:true, clue:null },
+  // Level 11-15: Calculus
+  { name:'d/dx', type:'derivative', color:'#bf00ff', speed:2.4, hp:10, score:250, isBoss:false, clue:null },
+  { name:'∫f(x)', type:'integral', color:'#9900ff', speed:2.5, hp:10, score:250, isBoss:false, clue:null },
+  { name:'lim→0', type:'limit', color:'#7700ff', speed:2.6, hp:12, score:300, isBoss:false, clue:'CLUE 4: The discriminant b²-4ac = 49' },
+  { name:'∂/∂x', type:'partial', color:'#6600ee', speed:2.8, hp:12, score:300, isBoss:false, clue:null },
+  { name:'BOSS: ∞', type:'boss', color:'#bf00ff', speed:1.2, hp:45, score:1000, isBoss:true, clue:null },
+  // Level 16-20: Trig & Final
+  { name:'sin(x)', type:'trig', color:'#00d4ff', speed:3.0, hp:14, score:350, isBoss:false, clue:null },
+  { name:'cos(θ)', type:'trig', color:'#0088ff', speed:3.2, hp:14, score:350, isBoss:false, clue:null },
+  { name:'tan(x)', type:'trig', color:'#0066ff', speed:3.4, hp:16, score:400, isBoss:false, clue:'CLUE 5: Use quadratic formula' },
+  { name:'log(n)', type:'log', color:'#00ffaa', speed:3.6, hp:18, score:450, isBoss:false, clue:null },
+  { name:'FINAL BOSS: X', type:'finalBoss', color:'#ffdd00', speed:1.5, hp:80, score:3000, isBoss:true, clue:null },
+];
+
+// Power-up types
+const POWERUPS = [
+  { name:'f(x)= GUN', symbol:'f(x)', effect:'ammo', color:'#ffdd00', desc:'Unlimited ammo boost!' },
+  { name:'Σ FORMULA', symbol:'Σ', effect:'ally_sigma', color:'#00ff88', desc:'Sigma formula joins you!' },
+  { name:'π SHIELD', symbol:'π', effect:'shield', color:'#00d4ff', desc:'π Shield activated!' },
+  { name:'e BOOST', symbol:'e', effect:'speed', color:'#bf00ff', desc:'Euler boost! Speed UP!' },
+  { name:'∞ LIFE', symbol:'∞', effect:'heal', color:'#ff88ff', desc:'Regenerating HP!' },
+];
+
+// Clue collection
+const CLUES = [
+  'The coefficient of x² is 2',
+  'The coefficient of x is 5',
+  'The constant term is -3',
+  'Discriminant = b²-4ac = 49',
+  'Use quadratic formula to find x'
+];
+
+// ---- CANVAS SETUP ----
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const W = 900, H = 510;
+
+// ---- GAME OBJECTS ----
+let player = {
+  x: 100, y: H-80,
+  w: 30, h: 60,
+  vx: 0, vy: 0,
+  onGround: false,
+  facing: 1,
+  hp: 100,
+  maxHp: 100,
+  alive: true,
+  shooting: false,
+  shootCooldown: 0,
+  special: false,
+  specialCooldown: 0,
+  invincible: 0,
+  speedBoost: 0,
+  shield: 0,
+  animFrame: 0,
+  animTimer: 0,
+  // Arms angle for animation
+  leftArmAngle: 0.5,
+  rightArmAngle: -0.3,
+  leftLegAngle: 0,
+  rightLegAngle: 0,
+};
+
+let enemies = [];
+let bullets = [];
+let particles = [];
+let floatingTexts = [];
+let platforms = [];
+let pickups = [];
+let allies = [];
+let boss = null;
+let bossActive = false;
+let levelCleared = false;
+let currentLevelDef = null;
+let spawnTimer = 0;
+let spawnCount = 0;
+let totalToSpawn = 5;
+let backgroundOffset = 0;
+let stars = [];
+let mathSymbols = [];  // background drifting symbols
+
+// Initialize stars
+for(let i=0;i<80;i++){
+  stars.push({ x: Math.random()*W, y: Math.random()*(H-80), size: Math.random()*2+0.5, twinkle: Math.random()*Math.PI*2 });
+}
+// Background math symbols
+const bgSymbols = ['∫','∑','∂','∞','π','θ','√','±','÷','×','≠','≤','≥','α','β','γ','Δ','λ','μ','σ'];
+for(let i=0;i<20;i++){
+  mathSymbols.push({
+    x: Math.random()*W,
+    y: Math.random()*(H-80),
+    sym: bgSymbols[Math.floor(Math.random()*bgSymbols.length)],
+    size: Math.random()*14+8,
+    opacity: Math.random()*0.06+0.02,
+    vx: (Math.random()-0.5)*0.3,
+    vy: (Math.random()-0.5)*0.3,
+    color: ['#00d4ff','#00ff88','#bf00ff','#ffdd00'][Math.floor(Math.random()*4)]
+  });
+}
+
+// ---- INPUT ----
+const keys = {};
+document.addEventListener('keydown', e => {
+  keys[e.code] = true;
+  if(e.code==='Space'||e.code==='ArrowUp') e.preventDefault();
+  if(e.code==='KeyZ') shootBullet();
+  if(e.code==='KeyX') doSpecial();
+});
+document.addEventListener('keyup', e => keys[e.code] = false);
+
+// ---- GAME INIT ----
+function startGame() {
+  document.getElementById('titleScreen').style.display = 'none';
+  document.getElementById('gameScreen').style.display = 'block';
+  state.gameRunning = true;
+  state.level = 1;
+  state.score = 0;
+  state.clues = [];
+  player.hp = player.maxHp;
+  setupLevel(1);
+  requestAnimationFrame(gameLoop);
+}
+
+function setupLevel(lvl) {
+  const idx = Math.min(lvl-1, LEVELS.length-1);
+  currentLevelDef = LEVELS[idx];
+  enemies = [];
+  bullets = [];
+  particles = [];
+  floatingTexts = [];
+  pickups = [];
+  allies = [];
+  boss = null;
+  bossActive = false;
+  levelCleared = false;
+  spawnTimer = 0;
+  spawnCount = 0;
+
+  if(currentLevelDef.isBoss) {
+    totalToSpawn = 1;
+    spawnBoss();
+  } else {
+    totalToSpawn = Math.min(5 + Math.floor(lvl/3), 15);
+  }
+
+  setupPlatforms(lvl);
+  showLevelAnnounce(lvl, currentLevelDef.name);
+  updateHUD();
+
+  // Collect clue if this level has one
+  if(currentLevelDef.clue && !state.clues.includes(currentLevelDef.clue)) {
+    // Will add clue when level cleared
+  }
+}
+
+function setupPlatforms(lvl) {
+  platforms = [
+    // Ground
+    { x:0, y:H-30, w:W, h:30, color:'#1a2a1a' },
+  ];
+  // Floating platforms based on level
+  const numP = Math.min(2 + Math.floor(lvl/3), 6);
+  for(let i=0;i<numP;i++){
+    platforms.push({
+      x: 80 + i*(W/numP - 30) + Math.random()*40,
+      y: H - 120 - Math.random()*140,
+      w: 80 + Math.random()*60,
+      h: 14,
+      color: '#1a3a2a'
+    });
+  }
+}
+
+// ---- LEVEL ANNOUNCE ----
+function showLevelAnnounce(lvl, enemyName) {
+  const ann = document.getElementById('levelAnnounce');
+  document.getElementById('announceNum').textContent = 'LEVEL ' + lvl;
+  document.getElementById('announceEnemy').textContent = (currentLevelDef.isBoss ? '⚠ BOSS: ' : 'ENEMY: ') + enemyName;
+  ann.style.opacity = '1';
+  setTimeout(() => { ann.style.opacity = '0'; }, 2000);
+}
+
+// ---- SPAWN ENEMIES ----
+function spawnEnemy() {
+  if(spawnCount >= totalToSpawn || currentLevelDef.isBoss) return;
+  const def = currentLevelDef;
+  const side = Math.random() > 0.5 ? W + 30 : -30;
+  const onPlatY = Math.random() > 0.5 && platforms.length > 1
+    ? platforms[1 + Math.floor(Math.random()*(platforms.length-1))].y - 50
+    : H - 80;
+
+  enemies.push({
+    x: side,
+    y: onPlatY,
+    w: 50, h: 50,
+    vx: side > 0 ? -def.speed : def.speed,
+    vy: 0,
+    onGround: false,
+    hp: def.hp,
+    maxHp: def.hp,
+    name: def.name,
+    color: def.color,
+    type: def.type,
+    score: def.score,
+    isBoss: false,
+    animTimer: 0,
+    animFrame: 0,
+    attackTimer: 0,
+    projectileTimer: 0,
+  });
+  spawnCount++;
+}
+
+function spawnBoss() {
+  const def = currentLevelDef;
+  boss = {
+    x: W - 150, y: H - 130,
+    w: 80, h: 100,
+    vx: -0.6,
+    vy: 0,
+    hp: def.hp,
+    maxHp: def.hp,
+    name: def.name,
+    color: def.color,
+    type: def.type,
+    isBoss: true,
+    animTimer: 0,
+    animFrame: 0,
+    attackTimer: 0,
+    projectileTimer: 0,
+    enraged: false,
+    phase: 1,
+    chargeTimer: 0,
+  };
+  bossActive = true;
+  const bossWrap = document.getElementById('bossHpWrap');
+  bossWrap.style.display = 'flex';
+  document.getElementById('bossLabel').textContent = '⚠ ' + def.name + ' ⚠';
+  updateBossHp();
+}
+
+// ---- SHOOT ----
+function shootBullet() {
+  if(!state.gameRunning) return;
+  if(player.shootCooldown > 0) return;
+  player.shootCooldown = 12;
+  const bx = player.x + (player.facing > 0 ? player.w : 0);
+  const by = player.y + player.h * 0.35;
+  bullets.push({
+    x: bx, y: by,
+    vx: player.facing * 10,
+    vy: -0.5 + (Math.random()-0.5)*0.5,
+    w: 28, h: 14,
+    alive: true,
+    owner: 'player',
+    label: 'f(x)=',
+    color: '#ffdd00',
+    trail: [],
+  });
+  spawnParticle(bx, by, '#ffdd00', 3, 0.8);
+}
+
+function doSpecial() {
+  if(!state.gameRunning) return;
+  if(player.specialCooldown > 0) return;
+  player.specialCooldown = 180;
+
+  // Special: wave of Σ shoots out
+  for(let i=-2;i<=2;i++){
+    bullets.push({
+      x: player.x + player.w/2,
+      y: player.y + player.h*0.4,
+      vx: player.facing * 8,
+      vy: i * 1.5,
+      w: 32, h: 14,
+      alive: true,
+      owner: 'player',
+      label: 'Σ=0',
+      color: '#00ff88',
+      trail: [],
+    });
+  }
+  spawnParticlesBurst(player.x+player.w/2, player.y+player.h/2, '#00ff88', 15);
+  showPowerup('⚡ SPECIAL: Sigma Burst!');
+}
+
+// ---- PARTICLES ----
+function spawnParticle(x, y, color, count, life) {
+  for(let i=0;i<count;i++){
+    const angle = Math.random()*Math.PI*2;
+    const speed = 1+Math.random()*3;
+    particles.push({
+      x, y,
+      vx: Math.cos(angle)*speed,
+      vy: Math.sin(angle)*speed - 2,
+      life: life || 0.8,
+      maxLife: life || 0.8,
+      color,
+      size: 2+Math.random()*3,
+    });
+  }
+}
+
+function spawnParticlesBurst(x, y, color, count) {
+  for(let i=0;i<count;i++){
+    const angle = (i/count)*Math.PI*2;
+    const speed = 2+Math.random()*5;
+    particles.push({
+      x, y,
+      vx: Math.cos(angle)*speed,
+      vy: Math.sin(angle)*speed,
+      life: 1.0,
+      maxLife: 1.0,
+      color,
+      size: 3+Math.random()*4,
+    });
+  }
+}
+
+function spawnFloatingText(x, y, text, color) {
+  floatingTexts.push({ x, y, text, color, life: 1.5, vy: -1.2 });
+}
+
+// ---- COLLISION ----
+function rectsOverlap(a, b) {
+  return a.x < b.x+b.w && a.x+a.w > b.x &&
+         a.y < b.y+b.h && a.y+a.h > b.y;
+}
+
+function resolvePlayerPlatform() {
+  player.onGround = false;
+  for(const p of platforms) {
+    const pb = { x:p.x, y:p.y, w:p.w, h:p.h };
+    if(player.x+player.w > pb.x && player.x < pb.x+pb.w) {
+      if(player.y+player.h > pb.y && player.y+player.h < pb.y+pb.h+12 && player.vy >= 0) {
+        player.y = pb.y - player.h;
+        player.vy = 0;
+        player.onGround = true;
+      }
+    }
+  }
+}
+
+function resolveEnemyPlatform(e) {
+  e.onGround = false;
+  for(const p of platforms) {
+    if(e.x+e.w > p.x && e.x < p.x+p.w) {
+      if(e.y+e.h > p.y && e.y+e.h < p.y+p.h+12 && e.vy >= 0) {
+        e.y = p.y - e.h;
+        e.vy = 0;
+        e.onGround = true;
+      }
+    }
+  }
+}
+
+// ---- UPDATE ----
+let lastTime = 0;
+function gameLoop(ts) {
+  if(!state.gameRunning) return;
+  const dt = Math.min((ts - lastTime)/16.67, 3);
+  lastTime = ts;
+
+  update(dt);
+  render();
+  requestAnimationFrame(gameLoop);
+}
+
+function update(dt) {
+  const speed = (3.5 + state.level*0.05) * (player.speedBoost > 0 ? 1.6 : 1);
+
+  // Player movement
+  if(keys['ArrowLeft']||keys['KeyA']) {
+    player.vx = -speed;
+    player.facing = -1;
+  } else if(keys['ArrowRight']||keys['KeyD']) {
+    player.vx = speed;
+    player.facing = 1;
+  } else {
+    player.vx *= 0.75;
+  }
+
+  if((keys['Space']||keys['ArrowUp']||keys['KeyW']) && player.onGround) {
+    player.vy = -13.5;
+    spawnParticle(player.x+player.w/2, player.y+player.h, '#00ff88', 4, 0.5);
+  }
+
+  // Gravity
+  player.vy += 0.55 * dt;
+  player.x += player.vx * dt;
+  player.y += player.vy * dt;
+
+  // Bounds
+  if(player.x < 0) player.x = 0;
+  if(player.x + player.w > W) player.x = W - player.w;
+  if(player.y > H-30) { player.y = H-30-player.h; player.vy = 0; player.onGround = true; }
+
+  resolvePlayerPlatform();
+
+  // Player shoot cooldown
+  if(player.shootCooldown > 0) player.shootCooldown -= dt;
+  if(player.specialCooldown > 0) player.specialCooldown -= dt;
+  if(player.invincible > 0) player.invincible -= dt;
+  if(player.speedBoost > 0) player.speedBoost -= dt;
+  if(player.shield > 0) player.shield -= dt;
+
+  // Player animation
+  player.animTimer += dt * 0.15;
+  if(Math.abs(player.vx) > 0.5) {
+    player.leftLegAngle = Math.sin(player.animTimer * 5) * 0.4;
+    player.rightLegAngle = -Math.sin(player.animTimer * 5) * 0.4;
+    player.leftArmAngle = -Math.sin(player.animTimer * 5) * 0.3 + 0.3;
+    player.rightArmAngle = Math.sin(player.animTimer * 5) * 0.3 - 0.3;
+  } else {
+    player.leftLegAngle *= 0.8;
+    player.rightLegAngle *= 0.8;
+  }
+  if(!player.onGround) {
+    player.leftLegAngle = 0.3;
+    player.rightLegAngle = -0.3;
+  }
+
+  // Spawn enemies
+  if(!currentLevelDef.isBoss && spawnCount < totalToSpawn) {
+    spawnTimer += dt;
+    const spawnInterval = Math.max(60 - state.level*2, 20);
+    if(spawnTimer > spawnInterval) {
+      spawnTimer = 0;
+      spawnEnemy();
+    }
+  }
+
+  // Update enemies
+  let allDead = true;
+  for(let i=enemies.length-1;i>=0;i--){
+    const e = enemies[i];
+    updateEnemy(e, dt);
+    if(e.hp > 0) allDead = false;
+  }
+  enemies = enemies.filter(e => e.hp > 0 || e.deathAnim > 0);
+
+  // Update boss
+  if(bossActive && boss) {
+    updateBoss(boss, dt);
+    if(boss.hp <= 0) {
+      bossDefeated();
+    } else {
+      allDead = false;
+    }
+  }
+
+  // Check level clear
+  if(!levelCleared && spawnCount >= totalToSpawn && enemies.length === 0 && !bossActive) {
+    levelCleared = true;
+    onLevelClear();
+  }
+
+  // Update bullets
+  for(let i=bullets.length-1;i>=0;i--){
+    const b = bullets[i];
+    b.trail.push({x:b.x, y:b.y});
+    if(b.trail.length > 5) b.trail.shift();
+    b.x += b.vx * dt;
+    b.y += b.vy * dt;
+    b.vy += 0.04 * dt;
+
+    if(b.x < -50 || b.x > W+50 || b.y < 0 || b.y > H) {
+      bullets.splice(i, 1);
+      continue;
+    }
+
+    if(b.owner === 'player') {
+      // Check enemy hits
+      let hit = false;
+      for(const e of enemies) {
+        if(rectsOverlap({x:b.x-b.w/2,y:b.y-b.h/2,w:b.w,h:b.h}, {x:e.x,y:e.y,w:e.w,h:e.h})) {
+          hitEnemy(e, 1);
+          spawnParticle(b.x, b.y, b.color, 6, 0.6);
+          spawnFloatingText(b.x, b.y-10, '-1', '#ffdd00');
+          hit = true; break;
+        }
+      }
+      if(!hit && bossActive && boss) {
+        if(rectsOverlap({x:b.x-b.w/2,y:b.y-b.h/2,w:b.w,h:b.h}, {x:boss.x,y:boss.y,w:boss.w,h:boss.h})) {
+          hitBoss(boss, 1);
+          spawnParticle(b.x, b.y, b.color, 6, 0.6);
+          spawnFloatingText(b.x, b.y-10, '-1', '#ff006e');
+          hit = true;
+        }
+      }
+      if(hit) { bullets.splice(i, 1); continue; }
+    } else {
+      // Enemy bullet hits player
+      if(player.invincible <= 0 && rectsOverlap({x:b.x-b.w/2,y:b.y-b.h/2,w:b.w,h:b.h}, {x:player.x,y:player.y,w:player.w,h:player.h})) {
+        hurtPlayer(b.damage||10);
+        spawnParticle(player.x+player.w/2, player.y+player.h/2, '#ff006e', 8, 0.7);
+        bullets.splice(i, 1);
+        continue;
+      }
+    }
+  }
+
+  // Update particles
+  for(let i=particles.length-1;i>=0;i--){
+    const p = particles[i];
+    p.x += p.vx * dt;
+    p.y += p.vy * dt;
+    p.vy += 0.1 * dt;
+    p.life -= 0.04 * dt;
+    if(p.life <= 0) particles.splice(i, 1);
+  }
+
+  // Update floating texts
+  for(let i=floatingTexts.length-1;i>=0;i--){
+    const ft = floatingTexts[i];
+    ft.y += ft.vy * dt;
+    ft.life -= 0.03 * dt;
+    if(ft.life <= 0) floatingTexts.splice(i, 1);
+  }
+
+  // Update pickups
+  for(let i=pickups.length-1;i>=0;i--){
+    const pk = pickups[i];
+    pk.y += Math.sin(pk.floatTimer) * 0.5;
+    pk.floatTimer = (pk.floatTimer||0) + 0.05;
+    if(rectsOverlap({x:pk.x-15,y:pk.y-15,w:30,h:30},{x:player.x,y:player.y,w:player.w,h:player.h})){
+      applyPowerup(pk);
+      pickups.splice(i, 1);
+      continue;
+    }
+    pk.life -= 0.005;
+    if(pk.life <= 0) pickups.splice(i, 1);
+  }
+
+  // Update background symbols
+  for(const s of mathSymbols) {
+    s.x += s.vx * dt;
+    s.y += s.vy * dt;
+    if(s.x < -30) s.x = W+30;
+    if(s.x > W+30) s.x = -30;
+    if(s.y < 0) s.y = H-80;
+    if(s.y > H-80) s.y = 0;
+  }
+
+  // Scroll background
+  backgroundOffset = (backgroundOffset + 0.3 * dt) % 40;
+
+  // Update allies
+  for(let ally of allies) {
+    ally.x += ally.vx * dt;
+    if(ally.x > W+60) ally.x = -60;
+    ally.animTimer = (ally.animTimer||0) + 0.1;
+    ally.shootTimer = (ally.shootTimer||0) + dt;
+    if(ally.shootTimer > 90) {
+      ally.shootTimer = 0;
+      bullets.push({
+        x: ally.x+20, y: ally.y,
+        vx: 8, vy: (Math.random()-0.5)*2,
+        w: 28, h: 14,
+        alive: true,
+        owner: 'player',
+        label: ally.label,
+        color: ally.color,
+        trail: [],
+      });
+    }
+  }
+
+  updateHUD();
+}
+
+function updateEnemy(e, dt) {
+  if(e.deathAnim !== undefined && e.deathAnim > 0) {
+    e.deathAnim -= dt * 0.05;
+    return;
+  }
+
+  // Move toward player
+  const dx = player.x - e.x;
+  if(Math.abs(dx) > 60) {
+    e.vx = Math.sign(dx) * Math.abs(e.vx);
+  } else {
+    // Close: attack
+    e.attackTimer = (e.attackTimer||0) + dt;
+    if(e.attackTimer > 80) {
+      e.attackTimer = 0;
+      if(player.invincible <= 0) {
+        const dmg = 8 + state.level * 1.5;
+        hurtPlayer(dmg);
+        spawnParticle(player.x+player.w/2, player.y, '#ff006e', 6, 0.6);
+        spawnFloatingText(player.x, player.y-15, `-${Math.round(dmg)}`, '#ff006e');
+      }
+    }
+  }
+
+  e.vy += 0.55 * dt;
+  e.x += e.vx * dt;
+  e.y += e.vy * dt;
+
+  // Bounce off walls
+  if(e.x < 0) { e.x = 0; e.vx *= -1; }
+  if(e.x+e.w > W) { e.x = W-e.w; e.vx *= -1; }
+  if(e.y > H-30) { e.y = H-30-e.h; e.vy = 0; e.onGround = true; }
+  resolveEnemyPlatform(e);
+
+  // Some enemies shoot projectiles
+  if(e.type==='derivative'||e.type==='integral'||e.type==='limit'||e.type==='trig'||e.type==='log') {
+    e.projectileTimer = (e.projectileTimer||0) + dt;
+    const interval = Math.max(120 - state.level * 4, 40);
+    if(e.projectileTimer > interval) {
+      e.projectileTimer = 0;
+      const names = {'derivative':'dy/dx', 'integral':'∫dx', 'limit':'lim', 'trig':'θ²', 'log':'ln(x)'};
+      bullets.push({
+        x: e.x + e.w/2,
+        y: e.y + e.h/2,
+        vx: Math.sign(player.x - e.x) * 5,
+        vy: -2 + Math.random()*2,
+        w: 26, h: 12,
+        alive: true,
+        owner: 'enemy',
+        label: names[e.type]||'!',
+        color: e.color,
+        damage: 12 + state.level * 2,
+        trail: [],
+      });
+    }
+  }
+
+  e.animTimer = (e.animTimer||0) + dt * 0.1;
+}
+
+function updateBoss(b, dt) {
+  b.animTimer += dt * 0.08;
+
+  // Enrage at 50% HP
+  if(b.hp < b.maxHp * 0.5 && !b.enraged) {
+    b.enraged = true;
+    b.phase = 2;
+    showPowerup('⚠ BOSS ENRAGED!');
+    spawnParticlesBurst(b.x+b.w/2, b.y+b.h/2, '#ff006e', 20);
+  }
+
+  const speed = b.enraged ? 2.0 : 0.9;
+
+  // Boss movement: figure-8 / bounce pattern
+  b.chargeTimer += dt;
+  const chargeInterval = b.enraged ? 100 : 160;
+  if(b.chargeTimer > chargeInterval) {
+    b.chargeTimer = 0;
+    // Charge at player
+    b.vx = Math.sign(player.x - b.x) * (speed * 3);
+    b.vy = -8;
+    spawnParticlesBurst(b.x+b.w/2, b.y+b.h/2, b.color, 10);
+  }
+
+  b.vx *= 0.97;
+  b.vy += 0.55 * dt;
+  b.x += b.vx * dt;
+  b.y += b.vy * dt;
+
+  if(b.x < 20) { b.x = 20; b.vx *= -1; }
+  if(b.x+b.w > W-20) { b.x = W-b.w-20; b.vx *= -1; }
+  if(b.y > H-30) { b.y = H-30-b.h; b.vy = 0; }
+  resolveEnemyPlatform(b);
+
+  // Boss shoots patterns
+  b.projectileTimer += dt;
+  const projInterval = b.enraged ? 35 : 65;
+  if(b.projectileTimer > projInterval) {
+    b.projectileTimer = 0;
+    bossShoot(b);
+  }
+
+  // Contact damage
+  if(player.invincible <= 0 && rectsOverlap({x:b.x,y:b.y,w:b.w,h:b.h},{x:player.x,y:player.y,w:player.w,h:player.h})) {
+    hurtPlayer(20 + state.level * 2);
+    player.invincible = 40;
+    spawnParticlesBurst(player.x+player.w/2, player.y+player.h/2, '#ff006e', 10);
+  }
+}
+
+function bossShoot(b) {
+  const patterns = {
+    boss: () => {
+      // Spread shot
+      for(let a=-1;a<=1;a++){
+        bullets.push({ x:b.x+b.w/2, y:b.y+b.h/2, vx:Math.sign(player.x-b.x)*6+a*1.5, vy:-1+a*2,
+          w:30,h:14, alive:true, owner:'enemy', label:b.name, color:b.color, damage:18, trail:[] });
+      }
+    },
+    finalBoss: () => {
+      // Circle shot
+      for(let i=0;i<8;i++){
+        const angle = (i/8)*Math.PI*2 + b.animTimer;
+        bullets.push({ x:b.x+b.w/2, y:b.y+b.h/2, vx:Math.cos(angle)*5, vy:Math.sin(angle)*5,
+          w:30,h:14, alive:true, owner:'enemy', label:'X=?', color:'#ffdd00', damage:25, trail:[] });
+      }
+    }
+  };
+  const fn = patterns[b.type] || patterns.boss;
+  fn();
+}
+
+function hitEnemy(e, dmg) {
+  e.hp -= dmg;
+  state.combo++;
+  if(e.hp <= 0) {
+    killEnemy(e);
+  }
+}
+
+function hitBoss(b, dmg) {
+  b.hp -= dmg;
+  state.combo++;
+  if(b.hp < 0) b.hp = 0;
+  updateBossHp();
+}
+
+function killEnemy(e) {
+  state.score += e.score * Math.max(state.combo, 1);
+  spawnParticlesBurst(e.x+e.w/2, e.y+e.h/2, e.color, 12);
+  spawnFloatingText(e.x+e.w/2, e.y, '+'+e.score, '#ffdd00');
+
+  // Drop pickup 30% chance
+  if(Math.random() < 0.3) {
+    const pu = POWERUPS[Math.floor(Math.random()*POWERUPS.length)];
+    pickups.push({ x:e.x+e.w/2, y:e.y, ...pu, life:1, floatTimer:0 });
+  }
+
+  e.hp = 0;
+  e.deathAnim = 1;
+}
+
+function bossDefeated() {
+  state.score += boss.score * 2;
+  spawnParticlesBurst(boss.x+boss.w/2, boss.y+boss.h/2, boss.color, 30);
+  spawnFloatingText(boss.x+boss.w/2, boss.y, '+'+boss.score*2, '#ffdd00');
+  document.getElementById('bossHpWrap').style.display = 'none';
+  bossActive = false;
+  boss = null;
+  // Boss always drops ally formula
+  const ally = POWERUPS[Math.floor(Math.random()*POWERUPS.length)];
+  showPowerup('🏆 BOSS DEFEATED! ' + ally.desc);
+  applyPowerupEffect(ally.effect);
+  // Give clue
+  if(currentLevelDef.clue && !state.clues.includes(currentLevelDef.clue)) {
+    addClue(currentLevelDef.clue);
+  }
+  levelCleared = true;
+  setTimeout(() => nextLevel(), 2500);
+}
+
+function onLevelClear() {
+  // Add clue if this level had one
+  const idx = state.level - 1;
+  if(idx < LEVELS.length && LEVELS[idx].clue && !state.clues.includes(LEVELS[idx].clue)) {
+    addClue(LEVELS[idx].clue);
+  }
+  // Also random clue drops
+  const clueIdx = state.clues.length;
+  if(clueIdx < CLUES.length && Math.random() < 0.4) {
+    addClue('CLUE: ' + CLUES[clueIdx]);
+  }
+
+  showPowerup('✅ LEVEL CLEAR! +' + (state.level * 200) + ' BONUS');
+  state.score += state.level * 200;
+  setTimeout(() => nextLevel(), 2000);
+}
+
+function addClue(clue) {
+  if(!state.clues.includes(clue)) {
+    state.clues.push(clue);
+    document.getElementById('clueText').textContent = clue;
+    spawnFloatingText(player.x, player.y-30, '📜 CLUE FOUND!', '#ffdd00');
+  }
+}
+
+function nextLevel() {
+  if(state.level >= state.maxLevel) {
+    showSolveScreen();
+    return;
+  }
+  state.level++;
+  setupLevel(state.level);
+}
+
+function hurtPlayer(dmg) {
+  if(player.shield > 0) {
+    spawnFloatingText(player.x, player.y-20, 'BLOCKED!', '#00d4ff');
+    return;
+  }
+  player.hp -= dmg;
+  player.invincible = 30;
+  state.combo = 0;
+  updateHUD();
+  if(player.hp <= 0) {
+    player.hp = 0;
+    updateHUD();
+    gameOver();
+  }
+}
+
+function applyPowerup(pk) {
+  showPowerup('⚡ ' + pk.name + '\n' + pk.desc);
+  applyPowerupEffect(pk.effect);
+  spawnParticlesBurst(pk.x, pk.y, pk.color, 12);
+}
+
+function applyPowerupEffect(effect) {
+  if(effect === 'heal') {
+    player.hp = Math.min(player.hp + 30, player.maxHp);
+    updateHUD();
+  } else if(effect === 'speed') {
+    player.speedBoost = 300;
+  } else if(effect === 'shield') {
+    player.shield = 400;
+  } else if(effect.startsWith('ally')) {
+    // Spawn ally formula
+    allies.push({
+      x: -60, y: H - 120 - Math.random()*80,
+      vx: 3 + Math.random()*1.5,
+      label: effect === 'ally_sigma' ? 'Σn' : 'π·r',
+      color: effect === 'ally_sigma' ? '#00ff88' : '#00d4ff',
+      shootTimer: 0,
+      animTimer: 0,
+    });
+    spawnFloatingText(player.x, player.y-30, '🤝 ALLY JOINED!', '#00ff88');
+  }
+}
+
+function showPowerup(msg) {
+  const el = document.getElementById('powerupPopup');
+  el.textContent = msg;
+  el.style.opacity = '1';
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.style.opacity = '0', 2500);
+}
+
+function gameOver() {
+  state.gameRunning = false;
+  const go = document.getElementById('gameOverScreen');
+  go.style.display = 'flex';
+  document.getElementById('goScore').textContent = 'FINAL SCORE: ' + state.score;
+}
+
+function showSolveScreen() {
+  state.gameRunning = false;
+  // Make sure we have enough clues
+  while(state.clues.length < 5) {
+    state.clues.push('CLUE: ' + CLUES[state.clues.length]);
+  }
+  const ss = document.getElementById('solveScreen');
+  ss.style.display = 'flex';
+  const cl = document.getElementById('clueListDisplay');
+  cl.innerHTML = state.clues.map((c,i) => `<div class="clue-item">📜 ${c}</div>`).join('');
+}
+
+function checkAnswer() {
+  const input = document.getElementById('solveInput').value.trim().toLowerCase();
+  const fb = document.getElementById('solveFeedback');
+  // Accept 0.5, 1/2, -3, or x=0.5, x=1/2 etc.
+  const correct = ['0.5','1/2','-3','x=0.5','x=1/2','0.5,-3','1/2,-3','-3,0.5','-3,1/2'].some(a => input.includes(a));
+  if(correct) {
+    fb.style.color = 'var(--neon-green)';
+    fb.textContent = '✅ CORRECT! x = 0.5 or x = -3';
+    setTimeout(() => {
+      document.getElementById('solveScreen').style.display = 'none';
+      showWin();
+    }, 1500);
+  } else {
+    fb.style.color = 'var(--neon-pink)';
+    fb.textContent = '❌ Try again! Hint: x = (-5 ± 7) / 4';
+    spawnParticlesBurst(450, 280, '#ff006e', 10);
+  }
+}
+
+function showWin() {
+  const ws = document.getElementById('winScreen');
+  ws.style.display = 'flex';
+  document.getElementById('winScore').textContent = 'FINAL SCORE: ' + state.score.toLocaleString();
+}
+
+function updateHUD() {
+  document.getElementById('hudLevel').textContent = state.level;
+  document.getElementById('hudScore').textContent = state.score.toLocaleString();
+  document.getElementById('hudClues').textContent = state.clues.length;
+  const hpPct = (player.hp / player.maxHp) * 100;
+  document.getElementById('hpBar').style.width = hpPct + '%';
+  document.getElementById('hpBar').style.background =
+    hpPct > 60 ? 'linear-gradient(90deg,#00ff88,#00dd66)' :
+    hpPct > 30 ? 'linear-gradient(90deg,#ffdd00,#ff8800)' :
+    'linear-gradient(90deg,#ff006e,#ff4444)';
+  document.getElementById('hudAmmo').textContent = player.specialCooldown > 0 ? `${Math.ceil(player.specialCooldown/60)}s` : '∞';
+}
+
+function updateBossHp() {
+  if(!boss) return;
+  document.getElementById('bossHpBar').style.width = (boss.hp/boss.maxHp*100)+'%';
+}
+
+// ============ RENDER ============
+function render() {
+  ctx.clearRect(0, 0, W, H);
+
+  // Sky gradient
+  const skyGrad = ctx.createLinearGradient(0,0,0,H);
+  skyGrad.addColorStop(0, '#050510');
+  skyGrad.addColorStop(1, '#0a0a20');
+  ctx.fillStyle = skyGrad;
+  ctx.fillRect(0, 0, W, H);
+
+  // Stars
+  for(const s of stars) {
+    const tw = 0.5 + 0.5 * Math.sin(s.twinkle + Date.now()*0.001);
+    ctx.fillStyle = `rgba(255,255,255,${0.2+tw*0.5})`;
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.size * (0.8+tw*0.4), 0, Math.PI*2);
+    ctx.fill();
+  }
+
+  // Background math symbols
+  for(const s of mathSymbols) {
+    ctx.save();
+    ctx.font = `${s.size}px "Share Tech Mono", monospace`;
+    ctx.fillStyle = s.color;
+    ctx.globalAlpha = s.opacity;
+    ctx.fillText(s.sym, s.x, s.y);
+    ctx.restore();
+  }
+
+  // Platforms
+  for(const p of platforms) {
+    if(p.h > 20) {
+      // Ground
+      const grad = ctx.createLinearGradient(0, p.y, 0, p.y+p.h);
+      grad.addColorStop(0, '#1a3a2a');
+      grad.addColorStop(1, '#0a1a0a');
+      ctx.fillStyle = grad;
+      ctx.fillRect(p.x, p.y, p.w, p.h);
+      // Grid on ground
+      ctx.strokeStyle = 'rgba(0,255,136,0.1)';
+      ctx.lineWidth = 1;
+      for(let gx=0;gx<W;gx+=40){
+        ctx.beginPath();
+        ctx.moveTo(gx, p.y);
+        ctx.lineTo(gx, p.y+p.h);
+        ctx.stroke();
+      }
+      // Neon edge
+      ctx.strokeStyle = '#00ff88';
+      ctx.lineWidth = 2;
+      ctx.shadowColor = '#00ff88';
+      ctx.shadowBlur = 8;
+      ctx.beginPath();
+      ctx.moveTo(0, p.y);
+      ctx.lineTo(W, p.y);
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+    } else {
+      // Floating platform
+      ctx.fillStyle = p.color;
+      ctx.fillRect(p.x, p.y, p.w, p.h);
+      ctx.strokeStyle = 'rgba(0,255,136,0.5)';
+      ctx.lineWidth = 2;
+      ctx.shadowColor = '#00ff88';
+      ctx.shadowBlur = 6;
+      ctx.strokeRect(p.x, p.y, p.w, p.h);
+      ctx.shadowBlur = 0;
+    }
+  }
+
+  // Pickups
+  for(const pk of pickups) {
+    ctx.save();
+    ctx.translate(pk.x, pk.y);
+    const t = Date.now()*0.003;
+    ctx.rotate(Math.sin(t)*0.1);
+    // Glow
+    ctx.shadowColor = pk.color;
+    ctx.shadowBlur = 12;
+    ctx.fillStyle = pk.color + '33';
+    ctx.beginPath();
+    ctx.arc(0, 0, 18, 0, Math.PI*2);
+    ctx.fill();
+    ctx.fillStyle = pk.color;
+    ctx.font = 'bold 12px "Share Tech Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(pk.symbol, 0, 0);
+    ctx.shadowBlur = 0;
+    ctx.restore();
+  }
+
+  // Allies
+  for(const ally of allies) {
+    ctx.save();
+    ctx.translate(ally.x, ally.y);
+    const bob = Math.sin(ally.animTimer * 2) * 4;
+    ctx.translate(0, bob);
+    ctx.fillStyle = ally.color;
+    ctx.shadowColor = ally.color;
+    ctx.shadowBlur = 10;
+    // Simple ally sprite: floating formula
+    ctx.font = 'bold 14px "Share Tech Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(ally.label, 0, -5);
+    // Little wings
+    ctx.beginPath();
+    ctx.moveTo(-8, 0);
+    ctx.quadraticCurveTo(-18, -12, -8, -16);
+    ctx.quadraticCurveTo(0, -8, 0, 0);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(8, 0);
+    ctx.quadraticCurveTo(18, -12, 8, -16);
+    ctx.quadraticCurveTo(0, -8, 0, 0);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.restore();
+  }
+
+  // Enemies
+  for(const e of enemies) {
+    if(e.hp <= 0 && !e.deathAnim) continue;
+    renderEnemy(e);
+  }
+
+  // Boss
+  if(bossActive && boss) renderBoss(boss);
+
+  // Player
+  renderPlayer();
+
+  // Bullets
+  for(const b of bullets) {
+    renderBullet(b);
+  }
+
+  // Particles
+  for(const p of particles) {
+    ctx.save();
+    ctx.globalAlpha = Math.max(p.life/p.maxLife, 0);
+    ctx.fillStyle = p.color;
+    ctx.shadowColor = p.color;
+    ctx.shadowBlur = 4;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size * (p.life/p.maxLife), 0, Math.PI*2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.restore();
+  }
+
+  // Floating texts
+  for(const ft of floatingTexts) {
+    ctx.save();
+    ctx.globalAlpha = Math.max(ft.life, 0);
+    ctx.fillStyle = ft.color;
+    ctx.font = 'bold 13px "Share Tech Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.shadowColor = ft.color;
+    ctx.shadowBlur = 6;
+    ctx.fillText(ft.text, ft.x, ft.y);
+    ctx.shadowBlur = 0;
+    ctx.restore();
+  }
+
+  // Shield visual
+  if(player.shield > 0) {
+    ctx.save();
+    ctx.globalAlpha = 0.3 + 0.2*Math.sin(Date.now()*0.01);
+    ctx.strokeStyle = '#00d4ff';
+    ctx.lineWidth = 3;
+    ctx.shadowColor = '#00d4ff';
+    ctx.shadowBlur = 16;
+    ctx.beginPath();
+    ctx.ellipse(player.x+player.w/2, player.y+player.h/2, player.w, player.h*0.7, 0, 0, Math.PI*2);
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.restore();
+  }
+
+  // Speed boost trails
+  if(player.speedBoost > 0) {
+    ctx.save();
+    ctx.globalAlpha = 0.2;
+    ctx.fillStyle = '#bf00ff';
+    ctx.fillRect(player.x - player.facing*20, player.y, player.w, player.h);
+    ctx.restore();
+  }
+
+  // Combo display
+  if(state.combo > 2) {
+    const cd = document.getElementById('comboDisplay');
+    cd.textContent = 'COMBO ×' + state.combo + '!';
+    cd.style.opacity = '1';
+    cd.style.fontSize = Math.min(18 + state.combo, 28) + 'px';
+  } else {
+    document.getElementById('comboDisplay').style.opacity = '0';
+  }
+}
+
+// ---- RENDER PLAYER (stick figure) ----
+function renderPlayer() {
+  const px = player.x + player.w/2;
+  const py = player.y;
+  const h  = player.h;
+
+  ctx.save();
+  ctx.translate(px, py);
+  if(player.facing < 0) ctx.scale(-1,1);
+
+  const col = player.invincible > 0 ? (Math.floor(Date.now()/80)%2===0 ? '#ffffff' : '#00ff88') : '#00ff88';
+
+  ctx.strokeStyle = col;
+  ctx.lineWidth = 2.5;
+  ctx.lineCap = 'round';
+  ctx.shadowColor = col;
+  ctx.shadowBlur = 6;
+
+  const headR = h * 0.13;
+  const torsoTop = headR * 2;
+  const torsoBot = h * 0.62;
+  const midTorso = torsoTop + (torsoBot - torsoTop) * 0.4;
+
+  // Head
+  ctx.beginPath();
+  ctx.arc(0, headR, headR, 0, Math.PI*2);
+  ctx.stroke();
+
+  // Eyes
+  ctx.fillStyle = col;
+  ctx.beginPath();
+  ctx.arc(-headR*0.35, headR*0.85, 1.5, 0, Math.PI*2);
+  ctx.arc(headR*0.35, headR*0.85, 1.5, 0, Math.PI*2);
+  ctx.fill();
+
+  // Expression
+  if(player.hp > 60) {
+    // Smile
+    ctx.beginPath();
+    ctx.arc(0, headR*1.0, headR*0.5, 0.2, Math.PI-0.2);
+    ctx.stroke();
+  } else if(player.hp > 30) {
+    // Flat
+    ctx.beginPath();
+    ctx.moveTo(-headR*0.5, headR*1.2);
+    ctx.lineTo(headR*0.5, headR*1.2);
+    ctx.stroke();
+  } else {
+    // Frown
+    ctx.beginPath();
+    ctx.arc(0, headR*1.5, headR*0.5, Math.PI+0.2, -0.2);
+    ctx.stroke();
+  }
+
+  // Torso
+  ctx.beginPath();
+  ctx.moveTo(0, torsoTop);
+  ctx.lineTo(0, torsoBot);
+  ctx.stroke();
+
+  // Left arm
+  ctx.save();
+  ctx.translate(0, midTorso - h*0.04);
+  ctx.rotate(player.leftArmAngle + (player.shooting ? -0.5 : 0));
+  ctx.beginPath();
+  ctx.moveTo(0,0);
+  ctx.lineTo(-h*0.32, h*0.12);
+  ctx.stroke();
+  ctx.restore();
+
+  // Right arm (holding f(x)= gun)
+  ctx.save();
+  ctx.translate(0, midTorso - h*0.04);
+  ctx.rotate(player.rightArmAngle + (player.shooting ? 0.2 : 0));
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.lineTo(h*0.34, h*0.05);
+  ctx.stroke();
+  // Gun
+  ctx.fillStyle = '#ffdd00';
+  ctx.shadowColor = '#ffdd00';
+  ctx.shadowBlur = 8;
+  ctx.fillRect(h*0.28, -h*0.04, h*0.22, h*0.1);
+  ctx.fillStyle = '#050510';
+  ctx.font = `${h*0.07}px "Share Tech Mono", monospace`;
+  ctx.textAlign = 'left';
+  ctx.shadowBlur = 0;
+  ctx.fillText('f(x)', h*0.29, h*0.03);
+  ctx.restore();
+
+  // Left leg
+  ctx.save();
+  ctx.translate(0, torsoBot);
+  ctx.rotate(player.leftLegAngle);
+  ctx.beginPath();
+  ctx.moveTo(0,0);
+  ctx.lineTo(-h*0.15, h*0.38);
+  ctx.stroke();
+  ctx.restore();
+
+  // Right leg
+  ctx.save();
+  ctx.translate(0, torsoBot);
+  ctx.rotate(player.rightLegAngle);
+  ctx.beginPath();
+  ctx.moveTo(0,0);
+  ctx.lineTo(h*0.15, h*0.38);
+  ctx.stroke();
+  ctx.restore();
+
+  ctx.shadowBlur = 0;
+  ctx.restore();
+}
+
+// ---- RENDER ENEMY ----
+function renderEnemy(e) {
+  ctx.save();
+  const alpha = e.deathAnim !== undefined && e.deathAnim > 0 ? e.deathAnim : 1;
+  ctx.globalAlpha = alpha;
+
+  const cx = e.x + e.w/2;
+  const cy = e.y + e.h/2;
+  const t  = Date.now()*0.002;
+
+  // Enemy glow orb
+  const grad = ctx.createRadialGradient(cx,cy,0, cx,cy,e.w*0.7);
+  grad.addColorStop(0, e.color+'88');
+  grad.addColorStop(1, e.color+'00');
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.arc(cx, cy, e.w*0.7, 0, Math.PI*2);
+  ctx.fill();
+
+  // Enemy body: floating math symbol
+  ctx.shadowColor = e.color;
+  ctx.shadowBlur = 16 + Math.sin(t*3)*6;
+  ctx.fillStyle = e.color;
+  ctx.strokeStyle = e.color;
+
+  const fontSize = e.w * 0.55;
+  ctx.font = `bold ${fontSize}px "Share Tech Mono", monospace`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+
+  const bob = Math.sin(t * 2 + e.x) * 4;
+  ctx.translate(0, bob);
+
+  // Draw name
+  ctx.fillText(e.name, cx, cy - 2);
+
+  // HP bar
+  const bw = e.w;
+  const bx = e.x;
+  const by = e.y - 10;
+  ctx.fillStyle = 'rgba(255,255,255,0.1)';
+  ctx.fillRect(bx, by, bw, 5);
+  ctx.fillStyle = e.color;
+  ctx.shadowBlur = 4;
+  ctx.fillRect(bx, by, bw*(e.hp/e.maxHp), 5);
+  ctx.shadowBlur = 0;
+
+  ctx.restore();
+}
+
+// ---- RENDER BOSS ----
+function renderBoss(b) {
+  ctx.save();
+  const t = Date.now()*0.002;
+
+  // Big aura
+  const auraR = b.w * 1.2;
+  const grad = ctx.createRadialGradient(b.x+b.w/2, b.y+b.h/2, 0, b.x+b.w/2, b.y+b.h/2, auraR);
+  grad.addColorStop(0, b.color+'44');
+  grad.addColorStop(0.5, b.color+'22');
+  grad.addColorStop(1, b.color+'00');
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.arc(b.x+b.w/2, b.y+b.h/2, auraR*(1+0.1*Math.sin(t*3)), 0, Math.PI*2);
+  ctx.fill();
+
+  // Orbiting symbols
+  const orbitSyms = ['∂','∇','∮','∯'];
+  for(let i=0;i<orbitSyms.length;i++){
+    const angle = t*1.5 + (i/orbitSyms.length)*Math.PI*2;
+    const ox = b.x+b.w/2 + Math.cos(angle)*55;
+    const oy = b.y+b.h/2 + Math.sin(angle)*40;
+    ctx.fillStyle = b.color;
+    ctx.font = '14px "Share Tech Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.shadowColor = b.color;
+    ctx.shadowBlur = 8;
+    ctx.fillText(orbitSyms[i], ox, oy);
+  }
+
+  // Boss body
+  ctx.shadowColor = b.color;
+  ctx.shadowBlur = 20 + Math.sin(t*4)*8;
+  ctx.fillStyle = b.color;
+
+  const fontSize = b.w * 0.7;
+  ctx.font = `bold ${fontSize}px "Share Tech Mono", monospace`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  const bob = Math.sin(t*1.5)*6;
+  ctx.fillText(b.name, b.x+b.w/2, b.y+b.h/2+bob);
+
+  // Enrage: fire effect
+  if(b.enraged) {
+    ctx.globalAlpha = 0.5 + 0.3*Math.sin(t*8);
+    ctx.fillStyle = '#ff4400';
+    ctx.font = `bold ${fontSize*1.1}px "Share Tech Mono", monospace`;
+    ctx.fillText(b.name, b.x+b.w/2+2, b.y+b.h/2+bob-2);
+    ctx.globalAlpha = 1;
+  }
+
+  ctx.shadowBlur = 0;
+  ctx.restore();
+}
+
+// ---- RENDER BULLET ----
+function renderBullet(b) {
+  ctx.save();
+  // Trail
+  for(let i=0;i<b.trail.length;i++){
+    const alpha = (i/b.trail.length)*0.4;
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = b.color;
+    ctx.beginPath();
+    ctx.arc(b.trail[i].x, b.trail[i].y, 3, 0, Math.PI*2);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+
+  // Bullet body
+  ctx.shadowColor = b.color;
+  ctx.shadowBlur = 10;
+  ctx.fillStyle = b.color + '44';
+  ctx.beginPath();
+  ctx.roundRect(b.x-b.w/2, b.y-b.h/2, b.w, b.h, 4);
+  ctx.fill();
+
+  ctx.fillStyle = b.color;
+  ctx.font = `bold 10px "Share Tech Mono", monospace`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(b.label, b.x, b.y);
+
+  ctx.shadowBlur = 0;
+  ctx.restore();
+}
+</script>
+</body>
+</html>
